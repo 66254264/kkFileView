@@ -1,6 +1,5 @@
 package cn.keking.config;
 
-import cn.keking.service.impl.OfficeFilePreviewImpl;
 import org.artofsolving.jodconverter.office.OfficeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +27,14 @@ public class ConfigRefreshComponent {
         configRefreshThread.start();
     }
 
-    class ConfigRefreshThread implements Runnable {
+    static class ConfigRefreshThread implements Runnable {
         @Override
         public void run() {
             try {
                 Properties properties = new Properties();
                 String text;
                 String media;
-                Boolean cacheEnabled;
+                boolean cacheEnabled;
                 String[] textArray;
                 String[] mediaArray;
                 String officePreviewType;
@@ -45,12 +44,13 @@ public class ConfigRefreshComponent {
                 String configFilePath = OfficeUtils.getCustomizedConfigPath();
                 String baseUrl;
                 String trustHost;
+                String pdfDownloadDisable;
                 while (true) {
                     FileReader fileReader = new FileReader(configFilePath);
                     BufferedReader bufferedReader = new BufferedReader(fileReader);
                     properties.load(bufferedReader);
                     OfficeUtils.restorePropertiesFromEnvFormat(properties);
-                    cacheEnabled = new Boolean(properties.getProperty("cache.enabled", ConfigConstants.DEFAULT_CACHE_ENABLED));
+                    cacheEnabled = Boolean.parseBoolean(properties.getProperty("cache.enabled", ConfigConstants.DEFAULT_CACHE_ENABLED));
                     text = properties.getProperty("simText", ConfigConstants.DEFAULT_TXT_TYPE);
                     media = properties.getProperty("media", ConfigConstants.DEFAULT_MEDIA_TYPE);
                     officePreviewType = properties.getProperty("office.preview.type", ConfigConstants.DEFAULT_OFFICE_PREVIEW_TYPE);
@@ -61,15 +61,18 @@ public class ConfigRefreshComponent {
                     mediaArray = media.split(",");
                     baseUrl = properties.getProperty("base.url", ConfigConstants.DEFAULT_BASE_URL);
                     trustHost = properties.getProperty("trust.host", ConfigConstants.DEFAULT_TRUST_HOST);
-                    ConfigConstants.setCacheEnabled(cacheEnabled);
-                    ConfigConstants.setSimText(textArray);
-                    ConfigConstants.setMedia(mediaArray);
-                    ConfigConstants.setOfficePreviewType(officePreviewType);
-                    ConfigConstants.setFtpUsername(ftpUsername);
-                    ConfigConstants.setFtpPassword(ftpPassword);
-                    ConfigConstants.setFtpControlEncoding(ftpControlEncoding);
-                    ConfigConstants.setBaseUrl(baseUrl);
-                    ConfigConstants.setTrustHost(trustHost);
+                    pdfDownloadDisable = properties.getProperty("pdf.download.disable", ConfigConstants.DEFAULT_PDF_DOWNLOAD_DISABLE);
+                    ConfigConstants.setCacheEnabledValueValue(cacheEnabled);
+                    ConfigConstants.setSimTextValue(textArray);
+                    ConfigConstants.setMediaValue(mediaArray);
+                    ConfigConstants.setOfficePreviewTypeValue(officePreviewType);
+                    ConfigConstants.setFtpUsernameValue(ftpUsername);
+                    ConfigConstants.setFtpPasswordValue(ftpPassword);
+                    ConfigConstants.setFtpControlEncodingValue(ftpControlEncoding);
+                    ConfigConstants.setBaseUrlValue(baseUrl);
+                    ConfigConstants.setTrustHostValue(trustHost);
+                    ConfigConstants.setPdfDownloadDisableValue(pdfDownloadDisable);
+                    setWatermarkConfig(properties);
                     bufferedReader.close();
                     fileReader.close();
                     Thread.sleep(1000L);
@@ -77,6 +80,30 @@ public class ConfigRefreshComponent {
             } catch (IOException | InterruptedException e) {
                 LOGGER.error("读取配置文件异常", e);
             }
+        }
+
+        private void setWatermarkConfig(Properties properties) {
+            String watermarkTxt = properties.getProperty("watermark.txt", WatermarkConfigConstants.DEFAULT_WATERMARK_TXT);
+            String watermarkXSpace = properties.getProperty("watermark.x.space", WatermarkConfigConstants.DEFAULT_WATERMARK_X_SPACE);
+            String watermarkYSpace = properties.getProperty("watermark.y.space", WatermarkConfigConstants.DEFAULT_WATERMARK_Y_SPACE);
+            String watermarkFont = properties.getProperty("watermark.font", WatermarkConfigConstants.DEFAULT_WATERMARK_FONT);
+            String watermarkFontsize = properties.getProperty("watermark.fontsize", WatermarkConfigConstants.DEFAULT_WATERMARK_FONTSIZE);
+            String watermarkColor = properties.getProperty("watermark.color", WatermarkConfigConstants.DEFAULT_WATERMARK_COLOR);
+            String watermarkAlpha = properties.getProperty("watermark.alpha", WatermarkConfigConstants.DEFAULT_WATERMARK_ALPHA);
+            String watermarkWidth = properties.getProperty("watermark.width", WatermarkConfigConstants.DEFAULT_WATERMARK_WIDTH);
+            String watermarkHeight = properties.getProperty("watermark.height", WatermarkConfigConstants.DEFAULT_WATERMARK_HEIGHT);
+            String watermarkAngle = properties.getProperty("watermark.angle", WatermarkConfigConstants.DEFAULT_WATERMARK_ANGLE);
+            WatermarkConfigConstants.setWatermarkTxtValue(watermarkTxt);
+            WatermarkConfigConstants.setWatermarkXSpaceValue(watermarkXSpace);
+            WatermarkConfigConstants.setWatermarkYSpaceValue(watermarkYSpace);
+            WatermarkConfigConstants.setWatermarkFontValue(watermarkFont);
+            WatermarkConfigConstants.setWatermarkFontsizeValue(watermarkFontsize);
+            WatermarkConfigConstants.setWatermarkColorValue(watermarkColor);
+            WatermarkConfigConstants.setWatermarkAlphaValue(watermarkAlpha);
+            WatermarkConfigConstants.setWatermarkWidthValue(watermarkWidth);
+            WatermarkConfigConstants.setWatermarkHeightValue(watermarkHeight);
+            WatermarkConfigConstants.setWatermarkAngleValue(watermarkAngle);
+
         }
     }
 }
