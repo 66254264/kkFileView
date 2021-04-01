@@ -5,13 +5,15 @@ import cn.keking.model.ReturnResponse;
 import cn.keking.service.FilePreview;
 import cn.keking.utils.DownloadUtils;
 import cn.keking.utils.KkFileUtils;
+import jodd.io.FileUtil;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.web.util.HtmlUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by kl on 2018/1/17.
@@ -36,7 +38,8 @@ public class SimTextFilePreviewImpl implements FilePreview {
         try {
             File originFile = new File(response.getContent());
             String charset = KkFileUtils.getFileEncode(originFile);
-            String fileData = FileUtils.readFileToString(originFile, charset);
+            String fileData = FileUtil.readString(originFile, charset);
+            fileData = HtmlUtils.htmlEscape(fileData, StandardCharsets.UTF_8.name());
             model.addAttribute("textData", Base64.encodeBase64String(fileData.getBytes()));
         } catch (IOException e) {
             return otherFilePreview.notSupportedFile(model, fileAttribute, e.getLocalizedMessage());
